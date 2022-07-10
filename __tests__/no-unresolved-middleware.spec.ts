@@ -19,6 +19,7 @@ ruleTester.run('no-unresolved-middleware', rule, {
       middleware: 'sample'
     })
     </script>`,
+      options: [{ srcDir: '/' }],
     },
   ],
   // 失敗ケース

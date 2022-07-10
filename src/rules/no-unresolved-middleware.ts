@@ -2,7 +2,10 @@ import { TSESLint } from '@typescript-eslint/utils';
 import fs from 'fs';
 import path from 'path';
 
-const rule: TSESLint.RuleModule<'noUnresolvedMiddleware', []> = {
+const rule: TSESLint.RuleModule<
+  'noUnresolvedMiddleware',
+  { srcDir?: string }[]
+> = {
   meta: {
     type: 'problem',
     docs: {
@@ -10,14 +13,25 @@ const rule: TSESLint.RuleModule<'noUnresolvedMiddleware', []> = {
       recommended: 'error',
     },
     messages: {
-      noUnresolvedMiddleware: 'Middleware is not resolved',
+      noUnresolvedMiddleware: '{{ fileName }} is not found.',
     },
-    schema: [],
+    schema: [
+      {
+        type: 'object',
+      },
+    ],
     fixable: 'code',
   },
   create: (context) => {
+    const srcDir = context.options[0]?.srcDir ?? '/';
+
     return {
       ExportDefaultDeclaration(node) {
+        if (!context.getCwd) {
+          return;
+        }
+        const middlewareDir = path.join(context.getCwd(), srcDir, 'middleware');
+
         const { declaration } = node;
 
         if (declaration.type !== 'CallExpression') {
@@ -67,16 +81,12 @@ const rule: TSESLint.RuleModule<'noUnresolvedMiddleware', []> = {
           return;
         }
 
-        if (!context.getCwd) {
-          return;
-        }
-
         const isJsExist = fs.existsSync(
-          path.resolve(context.getCwd(), 'middleware', middlewareFile + '.js')
+          path.resolve(middlewareDir, middlewareFile + '.js')
         );
 
         const isTsExist = fs.existsSync(
-          path.resolve(context.getCwd(), 'middleware', middlewareFile + '.js')
+          path.resolve(middlewareDir, middlewareFile + '.js')
         );
 
         if (isJsExist || isTsExist) {
@@ -86,6 +96,9 @@ const rule: TSESLint.RuleModule<'noUnresolvedMiddleware', []> = {
         context.report({
           node,
           messageId: 'noUnresolvedMiddleware',
+          data: {
+            fileName: middlewareFile,
+          },
         });
       },
     };
