@@ -1,3 +1,4 @@
+import { isCallExpression, isIdentifier } from './../utils/type-guard';
 import { TSESLint } from '@typescript-eslint/utils';
 import fs from 'fs';
 import path from 'path';
@@ -32,23 +33,11 @@ const rule: TSESLint.RuleModule<
         }
         const middlewareDir = path.join(context.getCwd(), srcDir, 'middleware');
 
-        const { declaration } = node;
-
-        if (declaration.type !== 'CallExpression') {
+        if (!isCallExpression(node.declaration)) {
           return;
         }
 
-        if (declaration.callee.type !== 'Identifier') {
-          return;
-        }
-
-        const { name } = declaration.callee;
-
-        if (name !== 'defineComponent') {
-          return;
-        }
-
-        if (node.declaration.type !== 'CallExpression') {
+        if (!isIdentifier(node.declaration.callee)) {
           return;
         }
 
