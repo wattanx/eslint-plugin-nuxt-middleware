@@ -75,7 +75,7 @@ const rule: TSESLint.RuleModule<
         );
 
         const isTsExist = fs.existsSync(
-          path.resolve(middlewareDir, middlewareFile + '.js')
+          path.resolve(middlewareDir, middlewareFile + '.ts')
         );
 
         if (isJsExist || isTsExist) {
