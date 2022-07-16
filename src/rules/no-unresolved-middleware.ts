@@ -1,4 +1,9 @@
-import { isCallExpression, isIdentifier } from './../utils/type-guard';
+import {
+  isCallExpression,
+  isIdentifier,
+  isObjectExpression,
+  isProperty,
+} from './../utils/type-guard';
 import { TSESLint } from '@typescript-eslint/utils';
 import fs from 'fs';
 import path from 'path';
@@ -43,7 +48,7 @@ const rule: TSESLint.RuleModule<
 
         const arg = node.declaration.arguments[0];
 
-        if (arg.type !== 'ObjectExpression') {
+        if (!isObjectExpression(arg)) {
           return;
         }
 
@@ -56,7 +61,11 @@ const rule: TSESLint.RuleModule<
             x.key.name === 'middleware'
         );
 
-        if (middlewareNode?.type !== 'Property') {
+        if (!middlewareNode) {
+          return;
+        }
+
+        if (!isProperty(middlewareNode)) {
           return;
         }
 
