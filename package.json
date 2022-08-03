@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-nuxt-middleware",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Checks for the presence of Nuxt.js middleware.",
   "main": "dist/index.js",
   "files": [
