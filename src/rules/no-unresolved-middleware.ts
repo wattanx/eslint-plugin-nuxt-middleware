@@ -1,3 +1,4 @@
+import { resolve } from './../utils/resolve';
 import {
   isCallExpression,
   isIdentifier,
@@ -5,7 +6,6 @@ import {
   isProperty,
 } from './../utils/type-guard';
 import { TSESLint } from '@typescript-eslint/utils';
-import fs from 'fs';
 import path from 'path';
 
 const rule: TSESLint.RuleModule<
@@ -69,35 +69,57 @@ const rule: TSESLint.RuleModule<
           return;
         }
 
-        if (middlewareNode.value.type !== 'Literal') {
+        if (
+          middlewareNode.value.type !== 'Literal' &&
+          middlewareNode.value.type !== 'ArrayExpression'
+        ) {
           return;
         }
 
-        const middlewareFile = middlewareNode.value.value?.toString();
+        const report = (middlewareFile: string) => {
+          const isFileExist = resolve(middlewareDir, middlewareFile);
 
-        if (!middlewareFile) {
-          return;
+          if (isFileExist) {
+            return;
+          }
+          context.report({
+            node,
+            messageId: 'noUnresolvedMiddleware',
+            data: {
+              fileName: middlewareFile,
+            },
+          });
+        };
+
+        if (middlewareNode.value.type === 'Literal') {
+          const middlewareFile = middlewareNode.value.value?.toString();
+
+          if (!middlewareFile) {
+            return;
+          }
+
+          report(middlewareFile);
+        } else if (middlewareNode.value.type === 'ArrayExpression') {
+          const middlewareFiles = middlewareNode.value.elements;
+
+          if (!middlewareFiles) {
+            return;
+          }
+
+          middlewareFiles.forEach((x) => {
+            if (x.type !== 'Literal') {
+              return;
+            }
+
+            const middlewareFile = x.value?.toString();
+
+            if (!middlewareFile) {
+              return;
+            }
+
+            report(middlewareFile);
+          });
         }
-
-        const isJsExist = fs.existsSync(
-          path.resolve(middlewareDir, middlewareFile + '.js')
-        );
-
-        const isTsExist = fs.existsSync(
-          path.resolve(middlewareDir, middlewareFile + '.ts')
-        );
-
-        if (isJsExist || isTsExist) {
-          return;
-        }
-
-        context.report({
-          node,
-          messageId: 'noUnresolvedMiddleware',
-          data: {
-            fileName: middlewareFile,
-          },
-        });
       },
     };
   },

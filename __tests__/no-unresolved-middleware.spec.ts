@@ -8,9 +8,8 @@ const ruleTester = new TSESLint.RuleTester({
     sourceType: 'module',
   },
 });
-// rule名, ルールの実装(先程実装したやつ), 成功ケースと失敗ケース
+
 ruleTester.run('no-unresolved-middleware', rule, {
-  // 成功ケース
   valid: [
     {
       code: `
@@ -22,7 +21,6 @@ ruleTester.run('no-unresolved-middleware', rule, {
       options: [{ srcDir: '/' }],
     },
   ],
-  // 失敗ケース
   invalid: [
     {
       code: `
@@ -32,6 +30,22 @@ ruleTester.run('no-unresolved-middleware', rule, {
       })
       </script>`,
       errors: [
+        {
+          messageId: 'noUnresolvedMiddleware',
+        },
+      ],
+    },
+    {
+      code: `
+      <script>
+      export default defineComponent({
+        middleware: ['test', 'test2']
+      })
+      </script>`,
+      errors: [
+        {
+          messageId: 'noUnresolvedMiddleware',
+        },
         {
           messageId: 'noUnresolvedMiddleware',
         },
